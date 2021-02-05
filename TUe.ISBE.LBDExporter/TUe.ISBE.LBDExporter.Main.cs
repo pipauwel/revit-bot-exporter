@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
-using Autodesk;
-using Autodesk.Revit;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.DB.Electrical;
-using Autodesk.Revit.DB.Plumbing;
 using System.Windows.Forms;
 using Autodesk.Revit.DB.Architecture;
 
@@ -21,7 +15,7 @@ namespace TUe.ISBE.LBDExporter
     [Transaction(TransactionMode.Manual)]
     public class Export_LBD_File_Main : IExternalCommand
     {
-        private void DoThisInstead(
+        private void ShortExport(
           ExternalCommandData commandData)
         {
             UIApplication uiapp = commandData.Application;
@@ -277,14 +271,8 @@ namespace TUe.ISBE.LBDExporter
 
         }
 
-        public Result Execute(
-          ExternalCommandData commandData,
-          ref string message,
-          ElementSet elements)
+        private void OriginalMadsExport(ExternalCommandData commandData)
         {
-            DoThisInstead(commandData);
-            return Result.Succeeded;
-
             // SETTINGS
             Boolean opm = false;
             Boolean cdt = false;
@@ -341,7 +329,7 @@ namespace TUe.ISBE.LBDExporter
                     NL + "@prefix rvt:\t<https://example.org/rvt#> ." +
                     NL + $"@prefix inst:\t<{Namespace}> .";
 
-                String pString = 
+                String pString =
                          "@prefix props:\t<https://w3id.org/props#> ." +
                     NL + "@prefix rdfs:\t<http://www.w3.org/2000/01/rdf-schema#> ." +
                     NL + "@prefix xsd:\t<http://www.w3.org/2001/XMLSchema#> ." +
@@ -359,7 +347,7 @@ namespace TUe.ISBE.LBDExporter
                 String gString =
                         "@prefix bot:\t<https://w3id.org/bot#> ." +
                     NL + $"@prefix inst:\t<{Namespace}> .";
-                
+
                 String rsString =
                          "@prefix props:\t<https://w3id.org/props#> ." +
                     NL + "@prefix rdfs:\t<http://www.w3.org/2000/01/rdf-schema#> ." +
@@ -482,7 +470,7 @@ namespace TUe.ISBE.LBDExporter
 
                 IList<Element> WinDoor = new FilteredElementCollector(doc)
                     .WhereElementIsNotElementType().WherePasses(new LogicalOrFilter(new List<ElementFilter>
-                        {                            
+                        {
                             new ElementCategoryFilter(BuiltInCategory.OST_Windows),
                             new ElementCategoryFilter(BuiltInCategory.OST_Doors)
 
@@ -552,7 +540,7 @@ namespace TUe.ISBE.LBDExporter
                 #endregion
 
                 #region Rooms/Spaces
-                              
+
                 List<Element> spaces = new FilteredElementCollector(doc)
                 .OfClass(typeof(SpatialElement)).WhereElementIsNotElementType()
                   .Where(X => X.Category.Name == "Spaces" || X.Category.Name == "Rooms").ToList<Element>();
@@ -756,9 +744,9 @@ namespace TUe.ISBE.LBDExporter
 
                 foreach (Element e in spaces)
                 {
-                    
+
                     try
-                    {                        
+                    {
                         tString +=
                         NL + $"{ElementDict[e.LevelId]} bot:hasSpace {ElementDict[e.Id]} .";
                     }
@@ -829,6 +817,17 @@ namespace TUe.ISBE.LBDExporter
 
             //TaskDialog.Show("Success", $"Successfully exported triples");
 
+        }
+
+        public Result Execute(
+          ExternalCommandData commandData,
+          ref string message,
+          ElementSet elements)
+        {
+            ShortExport(commandData);
+            return Result.Succeeded;
+
+            OriginalMadsExport(commandData);
             return Result.Succeeded;
 
         }
