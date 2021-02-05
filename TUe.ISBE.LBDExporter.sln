@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRAS.Revit.TTL_Exporter", "NIRAS.Revit.TTL_Exporter\NIRAS.Revit.TTL_Exporter.csproj", "{B17010D6-5A7E-4065-B251-40D23B9C1148}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TUe.ISBE.LBDExporter", "TUe.ISBE.LBDExporter\TUe.ISBE.LBDExporter.csproj", "{B17010D6-5A7E-4065-B251-40D23B9C1148}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

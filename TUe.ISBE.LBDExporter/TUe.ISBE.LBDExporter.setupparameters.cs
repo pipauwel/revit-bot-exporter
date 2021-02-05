@@ -14,7 +14,7 @@ using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Plumbing;
 
-namespace NIRAS.Revit.TTL_Exporter
+namespace TUe.ISBE.LBDExporter
 {
     [Transaction(TransactionMode.Manual)]
     public class Addparameters : IExternalCommand
@@ -92,13 +92,15 @@ namespace NIRAS.Revit.TTL_Exporter
             Transaction tx = new Transaction(doc);
             string error = null;
 
-            String ProNum = (new FilteredElementCollector(doc)
+            /*String ProNum = (new FilteredElementCollector(doc)
                    .OfCategory(BuiltInCategory.OST_ProjectInformation)
                    .FirstElement() as ProjectInfo).Number;
 
             String Host = (new FilteredElementCollector(doc)
                    .OfCategory(BuiltInCategory.OST_ProjectInformation)
-                   .FirstElement() as ProjectInfo).LookupParameter("Host").AsString();
+                   .FirstElement() as ProjectInfo).LookupParameter("Host").AsString();*/
+
+            String Namespace = "http://linkedbuildingdata.net/ifc/resources20200915_130453/";
 
             tx.Start("Generate URIs");
 
@@ -114,7 +116,7 @@ namespace NIRAS.Revit.TTL_Exporter
                     try
                     {
 
-                        string s = Util.CreateURI(e, Host, ProNum);
+                        string s = Util.CreateURI(e, Namespace);
 
                         e.LookupParameter("URI").Set(s);
                         count += 1;
@@ -142,13 +144,15 @@ namespace NIRAS.Revit.TTL_Exporter
         {
             string uri = null;
 
-            String ProNum = (new FilteredElementCollector(doc)
+            /*String ProNum = (new FilteredElementCollector(doc)
                    .OfCategory(BuiltInCategory.OST_ProjectInformation)
                    .FirstElement() as ProjectInfo).Number;
 
             String Host = (new FilteredElementCollector(doc)
                    .OfCategory(BuiltInCategory.OST_ProjectInformation)
-                   .FirstElement() as ProjectInfo).LookupParameter("Host").AsString();
+                   .FirstElement() as ProjectInfo).LookupParameter("Host").AsString();*/
+
+            String Namespace = "http://linkedbuildingdata.net/ifc/resources20200915_130453";
 
             if (e.LookupParameter("URI") != null && String.IsNullOrEmpty(e.LookupParameter("URI").AsString()))
             {
@@ -158,7 +162,7 @@ namespace NIRAS.Revit.TTL_Exporter
 
                 try
                 {
-                    uri = Util.CreateURI(e, Host, ProNum);
+                    uri = Util.CreateURI(e, Namespace);
 
                     e.LookupParameter("URI").Set(uri);
                 }

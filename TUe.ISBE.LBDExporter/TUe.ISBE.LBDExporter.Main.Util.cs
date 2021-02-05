@@ -18,7 +18,7 @@ using System.Windows.Forms;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.IFC;
 
-namespace NIRAS.Revit.TTL_Exporter
+namespace TUe.ISBE.LBDExporter
 {
     class Util
     {
@@ -32,7 +32,7 @@ namespace NIRAS.Revit.TTL_Exporter
             return id;
         }
 
-        public static string CreateURI(Element e, string Host,string ProNum)
+        public static string CreateURI(Element e, string Namespace)
         {
 
             string cat = e.Category.Name;
@@ -40,7 +40,7 @@ namespace NIRAS.Revit.TTL_Exporter
             elType = elType.Remove(cat.Length - 1); // Singularize
 
             string guid = System.Uri.EscapeDataString(e.GetIFCGUID());
-            string uri = $"{Host}/{ProNum}/{elType}_{ guid }";
+            string uri = $"{Namespace}/{elType}_{ guid }";
             //string uri = $"{Host}/{ProNum}/{elType}_{ e.UniqueId }";
 
             uri = uri.Replace(" ", "_");
@@ -64,7 +64,7 @@ namespace NIRAS.Revit.TTL_Exporter
             string prop = Regex.Matches(property, @"([^:]+)$")[0].Value;
 
             string propURI = $"inst:{prop}_{guid}";
-            string stateURI = $"inst:state_{prop}_{ Guid.NewGuid().ToString() }";
+            string stateURI = $"inst:state_{prop}_{ System.Guid.NewGuid().ToString() }";
 
             return $"{foi}\n" +
                 $"\t{property} {propURI} .\n" +
