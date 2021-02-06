@@ -12,7 +12,8 @@ Debugging and running the code with Revit can be done in several ways (Google).
 
 ## How to work with the plugin
 When running Revit, the plugin exporter is available in the Addin tab.
-![Revit Addin Screenshot](rvtaddin.jpg)
+
+![Revit Addin Screenshot](img/rvtaddin.jpg)
 
 Export LBD file, and find the saved file on your machine.
 
