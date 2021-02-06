@@ -2,7 +2,7 @@
 <RevitAddIns>
  <AddIn Type="Command">
        <Name>LbdExporter</Name>
-       <FullClassName>TUe.ISBE.LBDExporter.Export_LBD_File_Main</FullClassName>
+       <FullClassName>TUe.ISBE.LBDExporter.Main</FullClassName>
        <Text>Export LBD File</Text>
        <Description>Exports TTL data in LBD format</Description>
        <VisibilityMode>AlwaysVisible</VisibilityMode>
@@ -10,16 +10,5 @@
        <AddInId>502fe383-2648-4e98-adf8-5e6047f9dc34</AddInId>
     <VendorId>PIP</VendorId>
     <VendorDescription>Pieter Pauwels</VendorDescription>
- </AddIn>
- <AddIn Type="Command">
-       <Name>AddParameters</Name>
-       <FullClassName>TUe.ISBE.LBDExporter.Addparameters</FullClassName>
-       <Text>Add Parameters</Text>
-       <Description>Adds shared parameters</Description>
-       <VisibilityMode>AlwaysVisible</VisibilityMode>
-       <Assembly>C:\PathToFile\revit-bot-exporter\bin\Debug\TUe.ISBE.LBDExporter.dll</Assembly>
-       <AddInId>502fe283-2648-4e98-adf8-5e6047f9dc34</AddInId>
-    <VendorId>PIP</VendorId>
-    <VendorDescription>Pieter Pauwels</VendorDescription>
- </AddIn>
+ </AddIn> 
 </RevitAddIns>

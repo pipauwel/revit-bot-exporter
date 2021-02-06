@@ -1,21 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Text.RegularExpressions;
 
-using Autodesk;
-using Autodesk.Revit;
-using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.DB.Electrical;
-using Autodesk.Revit.DB.Plumbing;
-using System.Windows.Forms;
-using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.IFC;
 
 namespace TUe.ISBE.LBDExporter
@@ -40,41 +26,19 @@ namespace TUe.ISBE.LBDExporter
             elType = elType.Remove(cat.Length - 1); // Singularize
 
             string guid = System.Uri.EscapeDataString(e.GetIFCGUID());
-            string uri = $"{Namespace}/{elType}_{ guid }";
+            string uri = $"{Namespace}{elType}_{ guid }"; //Namespace needs to include hash or slash 
             //string uri = $"{Host}/{ProNum}/{elType}_{ e.UniqueId }";
 
             uri = uri.Replace(" ", "_");
 
             return uri;
-
         }
 
-        public static string ToL1Prop(string foi, string property, string value)
+        /*public static string ToL1Prop(string foi, string property, string value)
         {
-            return $"{foi}\n" + 
-                $"{property} {value} .";
-        }
-
-        public static string ToL3Prop(string foi, string property, string value, string guid)
-        {
-            // Escape illegal characters in guid
-            guid = System.Uri.EscapeDataString(guid);
-
-            // Get property without prefix
-            string prop = Regex.Matches(property, @"([^:]+)$")[0].Value;
-
-            string propURI = $"inst:{prop}_{guid}";
-            string stateURI = $"inst:state_{prop}_{ System.Guid.NewGuid().ToString() }";
-
             return $"{foi}\n" +
-                $"\t{property} {propURI} .\n" +
-                $"{propURI}\n" +
-                $"\topm:hasPropertyState {stateURI} .\n" +
-                $"{stateURI}\n" +
-                $"\ta opm:CurrentPropertyState ;\n" +
-                $"\tschema:value {value} .\n";
-        }
-
+                $"{property} {value} .";
+        }*/
 
         public static string GetFacesAndEdges(Element e)
         {
@@ -226,9 +190,9 @@ namespace TUe.ISBE.LBDExporter
                     }
 
                     // Write to string
-                    xx += String.Join("\n", faceVertices) + "\n";
-                    xx += String.Join("\n", faceNormals) + "\n";
-                    xx += String.Join("\n", faceElements) + "\n";
+                    xx += String.Join(" ", faceVertices);// + "\n";
+                    xx += String.Join(" ", faceNormals);// + "\n";
+                    xx += String.Join(" ", faceElements);// + "\n";
 
                 }
             }
@@ -242,7 +206,7 @@ namespace TUe.ISBE.LBDExporter
         {
             return Convert.ToInt32(Math.Round(UnitUtils.ConvertFromInternalUnits(len, Autodesk.Revit.DB.DisplayUnitType.DUT_MILLIMETERS)));
         }
-
+        
     }
 
     static class Extensions

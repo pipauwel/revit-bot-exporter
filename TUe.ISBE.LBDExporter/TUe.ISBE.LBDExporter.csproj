@@ -55,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TUe.ISBE.LBDExporter.Main.Util.cs" />
-    <Compile Include="TUe.ISBE.LBDExporter.setupparameters.cs" />
     <Compile Include="TUe.ISBE.LBDExporter.Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
