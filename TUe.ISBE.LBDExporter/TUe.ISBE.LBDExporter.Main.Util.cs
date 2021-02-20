@@ -8,6 +8,8 @@ namespace TUe.ISBE.LBDExporter
 {
     class Util
     {
+        private static int objStartIndex = 0;
+        private static int objStartNormal = 0;
 
         public static string TypeNameToId(string Name)
         {
@@ -23,9 +25,11 @@ namespace TUe.ISBE.LBDExporter
 
             string cat = e.Category.Name;
             string elType = cat.ToLower();   // Make lower case
-            elType = elType.Remove(cat.Length - 1); // Singularize
+            if(elType.EndsWith("s"))
+                elType = elType.Remove(cat.Length - 1); // Singularize
 
-            string guid = System.Uri.EscapeDataString(e.GetIFCGUID());
+            string guid = System.Uri.EscapeDataString(e.GetUUID());
+            guid = guid.Replace("$", "_");
             string uri = $"{Namespace}{elType}_{ guid }"; //Namespace needs to include hash or slash 
             //string uri = $"{Host}/{ProNum}/{elType}_{ e.UniqueId }";
 
@@ -40,7 +44,7 @@ namespace TUe.ISBE.LBDExporter
                 $"{property} {value} .";
         }*/
 
-        public static string GetFacesAndEdges(Element e)
+        public static string GetFacesAndEdges(Element e, bool startFromZero)
         {
             String xx = "";
             bool RetainCurvedSurfaceFacets = true;
@@ -177,27 +181,48 @@ namespace TUe.ISBE.LBDExporter
                                 }
 
                                 // add indexes to list
-                                vertIndexes.Add($"{vidx+1}//{vnidx+1}");
+                                vertIndexes.Add($"{vidx+1+objStartIndex}/{vnidx+1 + objStartNormal}");
 
                             }
 
                             // Store face elements
                             string fStr = $"f {vertIndexes[0]} {vertIndexes[1]} {vertIndexes[2]}";
                             faceElements.Add(fStr);
-
                         }
 
                     }
 
                     // Write to string
-                    xx += String.Join(" ", faceVertices);// + "\n";
-                    xx += String.Join(" ", faceNormals);// + "\n";
-                    xx += String.Join(" ", faceElements);// + "\n";
+                    xx += String.Join("\n\t", faceVertices) + "\n\t";
+                    xx += String.Join("\n\t", faceNormals) + "\n\t";
+                    xx += String.Join("\n\t", faceElements) + "\n\t";
+                    if (!startFromZero)
+                    {
+                        objStartIndex += faceVertices.Count;
+                        objStartNormal += faceNormals.Count;
+                    }
 
                 }
-            }
 
-           
+                Mesh geomMesh = geomObj as Mesh;
+                Curve geomCurve = geomObj as Curve;
+                Point geomPoint = geomObj as Point;
+                PolyLine geomPoly = geomObj as PolyLine;
+
+                GeometryInstance geomInst = geomObj as GeometryInstance;
+                if (null != geomInst)
+                {
+                    GeometryElement geomElement = geomInst.GetInstanceGeometry();
+                    foreach (GeometryObject geomObj1 in geomElement)
+                    {
+                        Solid geomSolid1 = geomObj1 as Solid;
+                        if (null != geomSolid1)
+                        {
+                            Console.Out.WriteLine("got element: " + geomSolid1.Faces);
+                        }
+                    }
+                }
+            }          
 
             return xx;
         }
@@ -212,11 +237,21 @@ namespace TUe.ISBE.LBDExporter
     static class Extensions
     {
         /// <summary>
+        /// Get internal UUID for element
+        /// </summary>
+        /// <param name="e">Revit Element</param>
+        /// <returns>String UUID</returns>
+        public static string GetUUID(this Element e)
+        {
+            return e.UniqueId;
+        }
+
+        /// <summary>
         /// Get IFC GUID for element
         /// </summary>
         /// <param name="e">Revit Element</param>
         /// <returns>String IFCGUID</returns>
-        public static string GetIFCGUID(this Element e)
+        public static string GetGUID(this Element e)
         {
             // generate IFC GUID using IFC API
             string ifcid = ExporterIFCUtils.CreateAlternateGUID(e);
