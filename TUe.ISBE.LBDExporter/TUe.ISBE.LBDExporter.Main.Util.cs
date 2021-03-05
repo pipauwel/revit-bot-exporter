@@ -37,12 +37,40 @@ namespace TUe.ISBE.LBDExporter
 
             return uri;
         }
+        
 
-        /*public static string ToL1Prop(string foi, string property, string value)
+        public static string GetWKTLine(Element e)
         {
-            return $"{foi}\n" +
-                $"{property} {value} .";
-        }*/
+            String stOut = "";
+
+            // Get element geometry
+            Options opt = new Options();
+            GeometryElement geomElem = e.get_Geometry(opt);     
+            BoundingBoxXYZ box = geomElem.GetBoundingBox();
+
+            // Note that the section box can be rotated and transformed.  
+            // So the min/max corners coordinates relative to the model must be computed via the transform.
+            Transform trf = box.Transform;
+
+            XYZ max = box.Max; //Maximum coordinates (upper-right-front corner of the box before transform is applied).
+            XYZ min = box.Min; //Minimum coordinates (lower-left-rear corner of the box before transform is applied).
+
+            // Transform the min and max to model coordinates
+            XYZ maxInModelCoords = trf.OfPoint(max);
+            XYZ minInModelCoords = trf.OfPoint(min);
+
+            stOut += "(" + (minInModelCoords.X * 12 * 25.4).ToString().Replace(',', '.') + " "
+                + (minInModelCoords.Y * 12 * 25.4).ToString().Replace(',', '.') + ", "
+                + (minInModelCoords.X * 12 * 25.4).ToString().Replace(',', '.') + " "
+                + (maxInModelCoords.Y * 12 * 25.4).ToString().Replace(',', '.') + ")";
+
+                /*+(boundarySegment.GetCurve().GetEndPoint(0).X * 12 * 25.4).ToString().Replace(',', '.') + " "
+                + (boundarySegment.GetCurve().GetEndPoint(0).Y * 12 * 25.4).ToString().Replace(',', '.') + ", "
+                + (boundarySegment.GetCurve().GetEndPoint(1).X * 12 * 25.4).ToString().Replace(',', '.') + " "
+                + (boundarySegment.GetCurve().GetEndPoint(1).Y * 12 * 25.4).ToString().Replace(',', '.') + ")\" ."*/
+
+                return stOut;
+        }
 
         public static string GetFacesAndEdges(Element e, bool startFromZero)
         {

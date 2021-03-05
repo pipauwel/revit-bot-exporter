@@ -58,7 +58,7 @@ namespace TUe.ISBE.LBDExporter
         }
 
 
-            private void Export(
+        private void Export(
           ExternalCommandData commandData)
         {
             UIApplication uiapp = commandData.Application;
@@ -82,6 +82,9 @@ namespace TUe.ISBE.LBDExporter
                     NL + "@prefix beo:\t<https://pi.pauwel.be/voc/buildingelement/> ." +
                     NL + "@prefix mep:\t<https://pi.pauwel.be/voc/distributionelement/> ." +
                     NL + "@prefix props:\t<https://w3id.org/props#> ." +
+                    NL + "@prefix propstype:\t<https://w3id.org/propstype#> ." +
+                    NL + "@prefix propsMap:\t<https://w3id.org/propsmap#> ." +
+                    NL + "@prefix propstypeMap:\t<https://w3id.org/propstypemap#> ." +
                     NL + "@prefix fog:\t<https://w3id.org/fog#> ." +
                     NL + $"@prefix inst:\t<{Namespace}> ." + NL;
 
@@ -161,6 +164,7 @@ namespace TUe.ISBE.LBDExporter
                     Space space = e as Space;
 
                     String properties = GetProperties(space);
+                    String typeProperties = GetTypeProperties(space);
 
                     tString +=
                         NL + NL + $"{URI}" +
@@ -171,7 +175,7 @@ namespace TUe.ISBE.LBDExporter
                         NLT + $"props:ifcGuid \"{space.GetGUID()}\" ;" +
                         NLT + $"props:uuid \"{space.GetUUID()}\" ;" +
                         NLT + $"props:number \"{space.Number}\"^^xsd:string " + 
-                        properties + ";";
+                        properties + typeProperties + ";";
 
 
                     tString += NLT + $"bot:hasSimple3DModel \"\"\"{Util.GetFacesAndEdges(space, true)}\"\"\" ." + NL;
@@ -247,6 +251,7 @@ namespace TUe.ISBE.LBDExporter
                     Room room = e as Room;
 
                     String properties = GetProperties(room);
+                    String typeProperties = GetTypeProperties(room);
 
                     tString +=
                         NL + NL + $"{URI}" +
@@ -257,7 +262,7 @@ namespace TUe.ISBE.LBDExporter
                         NLT + $"props:ifcGuid \"{room.GetGUID()}\" ;" +
                         NLT + $"props:uuid \"{room.GetUUID()}\" ;" +
                         NLT + $"props:number \"{room.Number}\"^^xsd:string " +
-                        properties + ";";
+                        properties + typeProperties + ";";
 
                     tString += NLT + $"bot:hasSimple3DModel \"\"\"{Util.GetFacesAndEdges(room,true)}\"\"\" ." + NL;
 
@@ -374,9 +379,7 @@ namespace TUe.ISBE.LBDExporter
                             }
                         }
                     }
-
                 }
-
             }
 
             return tString;
@@ -585,10 +588,15 @@ namespace TUe.ISBE.LBDExporter
                     NLT + $"props:uuid \"{e.GetUUID()}\" ;";
 
                 String properties = GetProperties(e);
+                String typeProperties = GetTypeProperties(e);
 
                 tString += NLT + $"props:identityDataName \"{name}\" "
                     + properties
+                    + typeProperties
                     + ";";
+
+
+                tString += NLT + "fog:asSfa_v2-wkt \"LINESTRING " + Util.GetWKTLine(e) + "\" ;" + NL;
 
                 tString += NLT + $"bot:hasSimple3DModel \"\"\"{Util.GetFacesAndEdges(e, true)}\"\"\" ." + NL;
             }
@@ -626,10 +634,12 @@ namespace TUe.ISBE.LBDExporter
                     NLT + $"props:ifcGuid \"{e.GetGUID()}\" ;" +
                     NLT + $"props:uuid \"{e.GetUUID()}\" ;";
 
-                String properties = GetProperties(e);                
+                String properties = GetProperties(e);
+                String typeProperties = GetTypeProperties(e);
 
                 tString += NLT + $"props:identityDataName \"{name}\" "
                     + properties
+                    + typeProperties
                     + ";";
 
                 tString += NLT + $"bot:hasSimple3DModel \"\"\"{Util.GetFacesAndEdges(e, true)}\"\"\" ." + NL;
@@ -651,7 +661,78 @@ namespace TUe.ISBE.LBDExporter
                 propertyname = Regex.Replace(propertyname, @"\s+", "");
                 propertyname = propertyname.Replace("(", "_");
                 propertyname = propertyname.Replace(")", "");
+                propertyname = propertyname.Replace("\\", "");
+                propertyname = propertyname.Replace("/", "");
+                propertyname = propertyname.Replace(",", "COMMA");
+                propertyname = propertyname.Replace(".", "_");
+                propertyname = propertyname.Replace("=", "EQUALS");
                 properties += " ;" + NLT + "props:" + propertyname + " \"" + p.AsValueString() + "\"";
+            }
+            foreach (Parameter p in e.ParametersMap)
+            {
+                if (p.AsValueString() == "" || p.AsValueString() == null)
+                    continue;
+
+                String propertyname = p.Definition.Name;
+                propertyname = Regex.Replace(propertyname, @"\s+", "");
+                propertyname = propertyname.Replace("(", "_");
+                propertyname = propertyname.Replace(")", "");
+                propertyname = propertyname.Replace("\\", "");
+                propertyname = propertyname.Replace("/", "");
+                propertyname = propertyname.Replace(",", "COMMA");
+                propertyname = propertyname.Replace(".", "_");
+                propertyname = propertyname.Replace("=", "EQUALS");
+                properties += " ;" + NLT + "propsMap:" + propertyname + " \"" + p.AsValueString() + "\"";
+            }
+            Guid g = new Guid("13ea898e-9eb5-4f60-9a35-ca11f0349686");
+            Parameter sepID = e.get_Parameter(g);
+            if (sepID != null && sepID.HasValue)
+            {
+                properties += " ;" + NLT + "propsMap:separationID \"" + sepID.AsString() + "\"";
+            }
+            return properties;
+        }
+
+        private String GetTypeProperties(Element e)
+        {
+            String properties = "";
+            Type t = e.GetType();
+            Element elemType = doc.GetElement(e.GetTypeId());
+
+            if (elemType == null)
+                return "";
+
+            foreach (Parameter p in elemType.Parameters)
+            {
+                if (p.AsValueString() == "" || p.AsValueString() == null)
+                    continue;
+
+                String propertyname = p.Definition.Name;
+                propertyname = Regex.Replace(propertyname, @"\s+", "");
+                propertyname = propertyname.Replace("(", "_");
+                propertyname = propertyname.Replace(")", "");
+                propertyname = propertyname.Replace("\\", "");
+                propertyname = propertyname.Replace("/", "");
+                propertyname = propertyname.Replace(",", "COMMA");
+                propertyname = propertyname.Replace(".", "_");
+                propertyname = propertyname.Replace("=", "EQUALS");
+                properties += " ;" + NLT + "propstype:" + propertyname + " \"" + p.AsValueString() + "\"";
+            }
+            foreach (Parameter p in e.ParametersMap)
+            {
+                if (p.AsValueString() == "" || p.AsValueString() == null)
+                    continue;
+
+                String propertyname = p.Definition.Name;
+                propertyname = Regex.Replace(propertyname, @"\s+", "");
+                propertyname = propertyname.Replace("(", "_");
+                propertyname = propertyname.Replace(")", "");
+                propertyname = propertyname.Replace("\\", "");
+                propertyname = propertyname.Replace("/", "");
+                propertyname = propertyname.Replace(",", "COMMA");
+                propertyname = propertyname.Replace(".", "_");
+                propertyname = propertyname.Replace("=", "EQUALS");
+                properties += " ;" + NLT + "propstypeMap:" + propertyname + " \"" + p.AsValueString() + "\"";
             }
             return properties;
         }
@@ -743,8 +824,8 @@ namespace TUe.ISBE.LBDExporter
                             }
                             else
                             {
-                                tString +=
-                                    NL + $"{ElementDict[sp.Id]} bot:adjacentElement {BdSeg.ToString()} .";
+                                //tString +=
+                                //    NL + $"{ElementDict[sp.Id]} bot:adjacentElement {BdSeg.ToString()} .";
                             }
                         }
                         catch
@@ -806,6 +887,11 @@ namespace TUe.ISBE.LBDExporter
 
                 StuffDict.Add(e.Id, URI);
 
+                if(e.Id.IntegerValue.Equals(2321091))
+                {
+                    Console.Out.WriteLine("stop");
+                }
+
                 tString +=
                     NL + URI +
                     NLT + "a bot:Element ;" +
@@ -814,10 +900,12 @@ namespace TUe.ISBE.LBDExporter
                     NLT + $"props:uuid \"{e.GetUUID()}\" ;";
 
                 String properties = GetProperties(e);
+                String typeProperties = GetTypeProperties(e);
 
                 string name = $"\"{e.Name}\"";
                 tString += NLT + $"props:identityDataName {name} "
                     + properties
+                    + typeProperties
                     + "." + NL;
             }
 
